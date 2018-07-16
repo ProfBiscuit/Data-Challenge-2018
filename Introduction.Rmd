@@ -1,0 +1,116 @@
+---
+title: "Introduction to 2018 Statistics Methods Forum Data Challenge"
+author: "Eric Polley"
+date: "June 27th, 2018"
+output: beamer_presentation
+---
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+## Introduction
+
+The focus this year is the estimation and evaluation of a prognostic risk score with a right censored outcome of interest.
+
+The dataset is from a clinical trial in Non-Small Cell lung cancer with N=398 patients. The patients were randomly split into training (N=300) and a blinded test set (N=98).
+
+Details for the Data Challenge are available on Github: \url{https://github.com/ecpolley/Data_Challenge_2018}
+
+## Outline
+
+The data challenge will use the next 2 Statistical Methods Forum meetings
+
+* June 27th: Introduction to the data challenge
+* July 25th: Group Discussion and Q&A
+* August 20th 5:00pm local: Team submission deadline
+* August 22nd: Final Results presentation
+
+## Team Science
+
+* Participants are encouraged to work in teams\newline (N $\in$ (1, 2, \ldots, 10))
+* Opportunity to learn from each other and work with people outside usual team
+* Data is publicly available, so is available outside Mayo 
+* If you would like help forming a team, email Eric Polley or Kristin Mara
+* Teams are responsible for creating a team name, and may submit up to 3 estimates, with the last submission being the official one
+* If you are participating, please let us know in case we have any Data Challenge announcements
+
+## Overview of Dataset
+
+* Two datasets will be provided for the training and test sets
+* Clinical dataset with baseline variables and outcome
+* Each patient had a baseline Lung CT scan, single slice compiled in an (512, 512, N) Array
+
+## Overview of Dataset
+
+```{r loadData, echo = TRUE}
+# link to data on GitHub page if not available
+if(file.exists("Training_clinical.csv")) {
+  dat <- read.csv("Training_clinical.csv")
+} else {
+  urlfile <- "https://raw.githubusercontent.com/ecpolley/
+    Data_Challenge_2018/master/Training_clinical.csv"
+  download.file(urlfile, destfile = "Training_clinical.csv")
+  dat <- read.csv("Data.csv")
+}
+dim(dat)
+```
+
+## setup
+
+```{r loadPackages, echo = TRUE}
+library(arsenal)
+library(survival)
+library(survminer)
+```
+
+
+## Overview of Dataset
+\tiny
+```{r sumData, echo = FALSE, results = 'asis'}
+tab1 <- tableby( ~ age + as.factor(Clinical.T.Stage) + as.factor(Clinical.N.Stage) + Clinical.M.Stage + Overall.Stage + Histology + gender, data = dat)
+summary(tab1)
+```
+
+## Overview of Dataset
+```{r plotData, echo = FALSE}
+fit <- survfit(Surv(Survival.time, deadstatus.event) ~ 1, data = dat)
+ggsurvplot(fit, data = dat, risk.table = TRUE)
+
+```
+
+## Overview of Dataset
+```{r loadImg, echo = TRUE}
+load("DataChallengeDataTrain_array.RData")
+dim(IMAGES_array_train)
+```
+
+## Overview of Dataset
+```{r loadImg24, echo = TRUE}
+image(IMAGES_array_train[, , 4])
+```
+
+## Goal
+
+* The primary goal is to develop a prognostic risk score
+* How to evaluate on the held out set?
+
+## Evaluation
+
+Primary goal:
+
+* Each each patient in test set, provide predicted risk score
+* Evaluate discrimination by estimating concordance with observed survival times
+* Each team can email me (\url{Polley.Eric@Mayo.edu}) with text file including patient ID and predicted risk score
+
+
+## Evaluation
+
+Secondary goal:
+
+* Evaluate calibration of predicted probability of survival at specific time points
+* For each patient in test set, provide predicted probability of survival at 1, 2, and 3 years post treatment
+* 365, 730, and 1095 days
+* For each time point, split test data into quintiles based on predicted probability. Compare to Kaplan-Meier estimate.
+
+
+## Questions?
